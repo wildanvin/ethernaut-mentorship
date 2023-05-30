@@ -1,0 +1,10 @@
+2023-05-25 21:57:23.313 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 1_10_FMB.sol is saved.
+2023-05-25 21:57:23.314 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 2_10_MerkleProof.sol is saved.
+2023-05-25 21:57:23.314 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 3_10_Strings.sol is saved.
+2023-05-25 21:57:23.315 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 4_10_ReentrancyGuard.sol is saved.
+2023-05-25 21:57:23.315 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 5_10_Ownable.sol is saved.
+2023-05-25 21:57:23.315 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 6_10_ERC20.sol is saved.
+2023-05-25 21:57:23.316 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 7_10_Math.sol is saved.
+2023-05-25 21:57:23.316 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 8_10_Context.sol is saved.
+2023-05-25 21:57:23.316 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 9_10_IERC20Metadata.sol is saved.
+2023-05-25 21:57:23.316 | INFO     | __main__:write_source_file:57 - Contract FlappyMoonBird at 0xdb8a9347b548084c015cea07a4ea945a997f5d1d source code file 10_10_IERC20.sol is saved.
