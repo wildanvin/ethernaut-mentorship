@@ -1,7 +1,7 @@
 pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
-import "../../../contracts/0xdb8a9347b548084c015cea07a4ea945a997f5d1d_FlappyMoonBird/1_10_FMB.sol";
+import "../src/1_10_FMB.sol";
 
 contract UnderflowTest is Test {
 
