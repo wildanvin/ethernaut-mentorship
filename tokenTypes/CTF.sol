@@ -1,7 +1,7 @@
-//SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-contract CTF {
+
+contract CTF  {
 
    uint256[] public tokenTypes;
 
@@ -16,6 +16,8 @@ contract CTF {
        //valid values are from index [1,x]
        //0 index is invalid value and is not supposed to be used
    }
+
+
 
    function checkValidValue(uint256 x) public view returns(bool) {
        //assume that this function returns random bool value. 
@@ -53,46 +55,4 @@ contract CTF {
         //mint
         return randomTokenType;
     }
-}
-
-contract Attack {
-
-    CTF public ctf;
-
-    constructor (address _address) {
-        ctf = CTF(_address);
-    }
-    /*
-    uint256[] public tokenTypes;
-    
-    */
-    bool public c = ctf.checkValidValue(1);
-    //uint256 public a = ctf.tokenTypes.length;
-
-    /*
-    function attack(uint256 _number) public {
-        
-    }
-    */
-
-
-    /*
-    function pickRandomTokenType(uint256 _randomNumber) internal view returns(uint256) { 
-        uint256 randomNumberModded = _randomNumber % (ctf.tokenTypes.length - 1);
-        if(ctf.checkValidValue(randomNumberModded + 1) == true) {
-            return randomNumberModded + 1;
-        } else {
-            uint256 tokenType = randomNumberModded + 1 + 1;
-            for (uint256 index = 1; index < ctf.tokenTypes.length - 1; index++) { //this checks for all values of tokenTypes array
-                if(tokenType > ctf.tokenTypes.length - 1) tokenType = 1;
-                if(ctf.checkValidValue(tokenType) == true)
-                    return tokenType;
-                else
-                    tokenType = tokenType + index;
-            }
-        }
-        return type(uint256).max;
-    }
-    */
-
 }
