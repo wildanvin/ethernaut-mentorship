@@ -867,15 +867,15 @@ abstract contract Ownable is Context {
 contract BitChain is ERC20, Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    uint256 public marketingTaxBuy;
+    uint256 public marketingTaxBuy; //@audit-info probably can use uint64
     uint256 public marketingTaxSell;
     uint256 public marketingTaxTransfer;
 
-    uint256 public teamTaxBuy;
+    uint256 public teamTaxBuy; //@audit-info probably can use uint64
     uint256 public teamTaxSell;
     uint256 public teamTaxTransfer;
 
-    uint256 public immutable denominator;
+    uint256 public immutable denominator; // @audit-info what is this?
 
     uint256 public marketingTokenAmount;
     uint256 public teamTokenAmount;
@@ -883,17 +883,17 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
     address public marketingWallet;
     address public teamWallet;
 
-    bool private swapping;
+    bool private swapping;  
     uint256 public swapTokensAtAmount;
     bool public isSwapBackEnabled;
 
     IUniswapV2Router02 public immutable uniswapV2Router;
-    address public immutable uniswapV2Pair;
+    address public immutable uniswapV2Pair; //@audit-info notice uniswapV2Pair is immutable
 
-    mapping(address => bool) private _isAutomatedMarketMakerPair;
+    mapping(address => bool) private _isAutomatedMarketMakerPair; // @audit-info so we are going to exchange various pairs?
     mapping(address => bool) private _isExcludedFromFees;
 
-    modifier inSwap() {
+    modifier inSwap() {  // @audit-info why this modifier?
         swapping = true;
         _;
         swapping = false;
@@ -914,7 +914,7 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
 
     constructor() ERC20("BitChain", "BIT") {
         _transferOwnership(0x143A57405Cf9F127a7a8Dc6938a683909405DEFF);
-        _mint(owner(), 100_000_000 * (10 ** 18));
+        _mint(owner(), 100_000_000 * (10 ** 18)); //@audit-info 100_000_000 tokens minted to 0x143A57405Cf9F127a7a8Dc6938a683909405DEFF
 
         marketingTaxBuy = 400;
         marketingTaxSell = 400;
@@ -929,17 +929,17 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
         marketingWallet = 0xbb9DB9604c7E23aCB0873DDDa61EF1c7De385012;
         teamWallet = 0x5998e7B03d2Bf6592BE05e9eC528e0123694940e;
 
-        swapTokensAtAmount = totalSupply() / 10_000;
+        swapTokensAtAmount = totalSupply() / 10_000; // @audit-info this sets how much you can swap? or the rate? it is set to 10_000
         isSwapBackEnabled = true;
 
         address router = getRouterAddress();
         uniswapV2Router = IUniswapV2Router02(router);
         uniswapV2Pair = IUniswapV2Factory(uniswapV2Router.factory()).createPair(
             address(this),
-            uniswapV2Router.WETH()
-        );
+            uniswapV2Router.WETH() //@audit-info does it really returns WETH address
+        ); // @audit-info It created the pair but there is no addition of liquidity
 
-        _approve(address(this), address(uniswapV2Router), type(uint256).max);
+        _approve(address(this), address(uniswapV2Router), type(uint256).max); // @audit-info is approving everything to uniswapV2Router but this address doesnt have tokens, also there is no liquidity added. 
 
         _isAutomatedMarketMakerPair[address(uniswapV2Pair)] = true;
 
@@ -965,7 +965,7 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
         }
     }
 
-    function isContract(address account) public view returns (bool) {
+    function isContract(address account) public view returns (bool) { 
         return account.code.length > 0;
     }
 
@@ -1086,7 +1086,7 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
         );
         require(
             amount >= totalSupply() / 100_000,
-            "Amount must be equal or greater than 0.00001% of Total Supply"
+            "Amount must be equal or greater than 0.00001% of Total Supply" //@audit-info at deploy total supply is 100_000_000 ether. So amount should be greater that 1000 ether. The 0.00001% of 100_000_000 ether is 10 ether. So the denominator should be 10_000_000
         );
 
         swapTokensAtAmount = amount;
@@ -1113,7 +1113,7 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
             _isAutomatedMarketMakerPair[pair] != status,
             "Pair address is already the value of 'status'"
         );
-        _isAutomatedMarketMakerPair[pair] = status;
+        _isAutomatedMarketMakerPair[pair] = status; // @audit-info So there would be more pairs? Who creates more pairs?
 
         emit UpdateAutomatedMarketMakerPair(pair, status);
     }
@@ -1141,7 +1141,7 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
         return _isExcludedFromFees[account];
     }
 
-    function _transfer(
+    function _transfer( // @audit-info here is where the magic happens, it is a token that do a bunch of stuff when you transfer. it swaps?
         address from,
         address to,
         uint256 amount
@@ -1150,26 +1150,26 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
         require(to != address(0), "ERC20: transfer to the zero address");
 
         if (amount == 0) {
-            super._transfer(from, to, 0);
+            super._transfer(from, to, 0); //@audit-info wouldn't be better to just return
             return;
         }
 
-        uint256 contractTokenBalance = balanceOf(address(this));
+        uint256 contractTokenBalance = balanceOf(address(this)); //@audit-info balance of this ERC20 contract at deployment is 0
 
-        bool canSwap = contractTokenBalance >= swapTokensAtAmount;
+        bool canSwap = contractTokenBalance >= swapTokensAtAmount; //@audit-info at the begining swapTokensAtAmount is 10_000 in the constructor
 
         if (
             canSwap &&
-            !swapping &&
+            !swapping && //@audit-info This a variable from the modifier. I dont fully understand why. I guess it is similar to a reentrance guard?
             !_isAutomatedMarketMakerPair[from] &&
             isSwapBackEnabled
         ) {
-            swapBack();
+            swapBack(); // @audit-info if this is executed the function ends? NO
         }
 
         bool takeFee = true;
 
-        if (_isExcludedFromFees[from] || _isExcludedFromFees[to] || swapping) {
+        if (_isExcludedFromFees[from] || _isExcludedFromFees[to] || swapping) { // @audit-info if you are swapping you don't take fees?
             takeFee = false;
         }
 
@@ -1196,7 +1196,7 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
 
             if (fees > 0) {
                 amount -= fees;
-                super._transfer(from, address(this), fees);
+                super._transfer(from, address(this), fees); //@audit-issue there needs to be another super._transfer with amount - fees and then return
             }
         }
 
@@ -1217,7 +1217,7 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
         try
             uniswapV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(
                 swapBackAmount,
-                0,
+                0, //@audit-info the minimum amount shouldn't be 0
                 path,
                 address(this),
                 block.timestamp
@@ -1226,7 +1226,7 @@ contract BitChain is ERC20, Ownable, ReentrancyGuard {
             return;
         }
 
-        uint256 newBalance = address(this).balance;
+        uint256 newBalance = address(this).balance; //@audit-info double check if it swaps it for ETH or WETH
 
         uint256 marketingBNB = (newBalance * marketingTokenAmount) / totalTax;
         uint256 teamBNB = newBalance - marketingBNB;
