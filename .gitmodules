@@ -7,3 +7,6 @@
 [submodule "tokenTypes/foundryTest/lib/forge-std"]
 	path = tokenTypes/foundryTest/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "prepo/lib/forge-std"]
+	path = prepo/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
