@@ -12,7 +12,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20P
  * Base Token at a 1:1 exchange ratio. These Base Tokens can be withdrawn and
  * invested by a manager to earn yield except for a minimum required reserve
  * that must be kept within the contract
- * (enforced by `ManagerWithdrawHook.sol`). @audit-info so this works similar to a vault that generates yield. Similar to fractional reserve
+ * (enforced by `ManagerWithdrawHook.sol`).
  */
 interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
   /**
@@ -73,11 +73,11 @@ interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
    * @dev The `msg.sender` paying for the deposit does not have to match the
    * `recipient` that tokens will be minted to.
    *
-   * An optional external hook `depositHook`, is called to provide expanded @audit-info is it really optional?
+   * An optional external hook `depositHook`, is called to provide expanded 
    * functionality such as pausability and deposit limits.
    *
    * Fees are not directly captured, but approved to the `depositHook` for
-   * flexibility on how to handle fees. @audit-info so the fees are not sent to this contract, but approved to the depositHook. The hook is also a important contract. If you can get access on it you can approve the fees to you etc
+   * flexibility on how to handle fees. 
    *
    * Assumes Base Token approval has already been given by `msg.sender`.
    *
@@ -98,7 +98,7 @@ interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
    * flexibility on how to handle fees.
    *
    * Does not allow withdraw amounts small enough to result in 
-   * a fee of 0 (if the withdraw fee factor is > 0), including 0. @audit-info are you sure about that?
+   * a fee of 0 (if the withdraw fee factor is > 0), including 0 
    * @param amount Collateral amount to redeem
    */
   function withdraw(uint256 amount) external;
@@ -130,7 +130,7 @@ interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
 
   /**
    * @notice Sets the fee factor for redeeming Collateral, must be a 4 decimal
-   * place percentage value e.g. 4.9999% = 49999. @audit-info I think there would be an erro if you want the fee to be 0,5%
+   * place percentage value e.g. 4.9999% = 49999. 
    * @dev Only callable by `SET_WITHDRAW_FEE_ROLE` role holder
    * @param newWithdrawFee The new withdraw fee factor
    */
