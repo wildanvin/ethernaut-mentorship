@@ -3,13 +3,13 @@ pragma solidity =0.8.7;
 
 import "./interfaces/ICollateral.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "prepo-shared-contracts/contracts/SafeAccessControlEnumerableUpgradeable.sol"; //@audit-info looks like they implemented their own enumerables 
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol"; //@audit-info why a reentrancy guard upgradeable
+import "prepo-shared-contracts/contracts/SafeAccessControlEnumerableUpgradeable.sol"; //@audit-info looks like they implemented their own enumerables and why do you make an enumerable upgradeable?
 
 contract Collateral is ICollateral, ERC20PermitUpgradeable, SafeAccessControlEnumerableUpgradeable, ReentrancyGuardUpgradeable {
   IERC20 private immutable baseToken;
   uint256 private immutable baseTokenDenominator;
-  address private manager;
+  address private manager; //@audit-info seems like manager is an EOA
   uint256 private depositFee;
   uint256 private withdrawFee;
   ICollateralHook private depositHook;
@@ -18,7 +18,7 @@ contract Collateral is ICollateral, ERC20PermitUpgradeable, SafeAccessControlEnu
 
   uint256 public constant FEE_DENOMINATOR = 1000000;
   uint256 public constant FEE_LIMIT = 100000;
-  bytes32 public constant MANAGER_WITHDRAW_ROLE = keccak256("Collateral_managerWithdraw(uint256)"); //@audit-info what are these hashes 
+  bytes32 public constant MANAGER_WITHDRAW_ROLE = keccak256("Collateral_managerWithdraw(uint256)"); //@audit-info these are hashes used by the access control contract SafeAccessControlEnumerableUpgradeable
   bytes32 public constant SET_MANAGER_ROLE = keccak256("Collateral_setManager(address)");
   bytes32 public constant SET_DEPOSIT_FEE_ROLE = keccak256("Collateral_setDepositFee(uint256)");
   bytes32 public constant SET_WITHDRAW_FEE_ROLE = keccak256("Collateral_setWithdrawFee(uint256)");
@@ -31,10 +31,11 @@ contract Collateral is ICollateral, ERC20PermitUpgradeable, SafeAccessControlEnu
     baseTokenDenominator = 10**_newBaseTokenDecimals;
   }
 
-  function initialize(string memory _name, string memory _symbol) public initializer {
+  function initialize(string memory _name, string memory _symbol) public initializer { //@audit-info I guess this has something to do with the upgradealbility of the contracts.
     __SafeAccessControlEnumerable_init();
     __ERC20_init(_name, _symbol);
     __ERC20Permit_init(_name);
+    //@audit the reentrnacy upgradeable doesn't seem to be initialized here. Is it by default initialized? there is a type of proxy that needs to be initialized otherwise it stops working
   }
 
   /**
@@ -43,11 +44,11 @@ contract Collateral is ICollateral, ERC20PermitUpgradeable, SafeAccessControlEnu
    * units to collateral token units.
    */
   function deposit(address _recipient, uint256 _amount) external override nonReentrant returns (uint256) { //@audit-info where is the modifier set?
-    uint256 _fee = (_amount * depositFee) / FEE_DENOMINATOR; //@audit-info where is depositFee set?
+    uint256 _fee = (_amount * depositFee) / FEE_DENOMINATOR; 
     if (depositFee > 0) { require(_fee > 0, "fee = 0"); }
-    else { require(_amount > 0, "amount = 0"); }
+    else { require(_amount > 0, "amount = 0"); } //@audit-info here it can fail with no message if depositFee > 0 and _amount = 0
     baseToken.transferFrom(msg.sender, address(this), _amount);
-    uint256 _amountAfterFee = _amount - _fee;
+    uint256 _amountAfterFee = _amount - _fee;  
     if (address(depositHook) != address(0)) {
       baseToken.approve(address(depositHook), _fee);
       depositHook.hook(_recipient, _amount, _amountAfterFee);
@@ -58,7 +59,7 @@ contract Collateral is ICollateral, ERC20PermitUpgradeable, SafeAccessControlEnu
     _mint(_recipient, _collateralMintAmount);
     emit Deposit(_recipient, _amountAfterFee, _fee);
     return _collateralMintAmount;
-  }
+  }//@audit-info is this function suceptible to the flash loan attack from damn vulnerable defi?
 
   /// @dev Converts amount from collateral token units to base token units.
   function withdraw(uint256 _amount) external override nonReentrant {
@@ -75,7 +76,7 @@ contract Collateral is ICollateral, ERC20PermitUpgradeable, SafeAccessControlEnu
     }
     baseToken.transfer(msg.sender, _baseTokenAmountAfterFee);
     emit Withdraw(msg.sender, _baseTokenAmountAfterFee, _fee);
-  }
+  }//@audit-info can you withdraw more than what you have
 
   function managerWithdraw(uint256 _amount) external override onlyRole(MANAGER_WITHDRAW_ROLE) nonReentrant {
     if (address(managerWithdrawHook) != address(0)) managerWithdrawHook.hook(msg.sender, _amount, _amount);

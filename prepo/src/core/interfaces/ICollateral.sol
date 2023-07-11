@@ -12,7 +12,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20P
  * Base Token at a 1:1 exchange ratio. These Base Tokens can be withdrawn and
  * invested by a manager to earn yield except for a minimum required reserve
  * that must be kept within the contract
- * (enforced by `ManagerWithdrawHook.sol`).
+ * (enforced by `ManagerWithdrawHook.sol`). @audit-info so this works similar to a vault that generates yield. Similar to fractional reserve
  */
 interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
   /**
@@ -65,7 +65,7 @@ interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
    * @dev Emitted via `setManagerWithdrawHook()`.
    * @param hook Address of the new hook for `managerWithdraw()`
    */
-  event ManagerWithdrawHookChange(address hook);
+  event ManagerWithdrawHookChange(address hook); //@audit-info notice how there are 2 ways to withdraw. the 1st with the withdraw hook and the secod with the manager withdraw hook. What if you want to withdraw and the contract doesnt have enough base tokens. Also notice how the logic of withdraw is always delegated to an external contract the the admins could change when they want.
 
   /**
    * @notice Mints Collateral tokens to `recipient` based on `amount`
@@ -73,19 +73,19 @@ interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
    * @dev The `msg.sender` paying for the deposit does not have to match the
    * `recipient` that tokens will be minted to.
    *
-   * An optional external hook `depositHook`, is called to provide expanded
+   * An optional external hook `depositHook`, is called to provide expanded @audit-info is it really optional?
    * functionality such as pausability and deposit limits.
    *
    * Fees are not directly captured, but approved to the `depositHook` for
-   * flexibility on how to handle fees.
+   * flexibility on how to handle fees. @audit-info so the fees are not sent to this contract, but approved to the depositHook. The hook is also a important contract. If you can get access on it you can approve the fees to you etc
    *
    * Assumes Base Token approval has already been given by `msg.sender`.
    *
-   * Does not allow deposit amounts small enough to result in
+   * Does not allow deposit amounts small enough to result in 
    * a fee of 0 (if the deposit fee factor is > 0), including 0.
    * @param recipient Address to mint Collateral to
    * @param amount Base Token amount to be deposited
-   * @return Collateral amount to be minted
+   * @return Collateral amount to be minted @audit-info what would happen if you send some token without depositing? How is the accounting working. Or can you do a flash loan and deposit similar to the damn vulnerabel defi problem? 
    */
   function deposit(address recipient, uint256 amount) external returns (uint256);
 
@@ -97,8 +97,8 @@ interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
    * Fees are not directly captured, but approved to the `withdrawHook` for
    * flexibility on how to handle fees.
    *
-   * Does not allow withdraw amounts small enough to result in
-   * a fee of 0 (if the withdraw fee factor is > 0), including 0.
+   * Does not allow withdraw amounts small enough to result in 
+   * a fee of 0 (if the withdraw fee factor is > 0), including 0. @audit-info are you sure about that?
    * @param amount Collateral amount to redeem
    */
   function withdraw(uint256 amount) external;
@@ -130,7 +130,7 @@ interface ICollateral is IERC20Upgradeable, IERC20PermitUpgradeable {
 
   /**
    * @notice Sets the fee factor for redeeming Collateral, must be a 4 decimal
-   * place percentage value e.g. 4.9999% = 49999.
+   * place percentage value e.g. 4.9999% = 49999. @audit-info I think there would be an erro if you want the fee to be 0,5%
    * @dev Only callable by `SET_WITHDRAW_FEE_ROLE` role holder
    * @param newWithdrawFee The new withdraw fee factor
    */
