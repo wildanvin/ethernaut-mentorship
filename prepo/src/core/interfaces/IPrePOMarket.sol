@@ -36,7 +36,7 @@ interface IPrePOMarket {
   /**
    * @dev Emitted via `redeem()`.
    * @param redeemer The address of the redeemer
-   * @param amountAfterFee The amount of Long/Short tokens minted
+   * @param amountAfterFee The amount of Long/Short tokens minted @audit-info you mean tokens burned?
    * @param fee The fee in Collateral that was taken
    */
   event Redemption(address indexed redeemer, uint256 amountAfterFee, uint256 fee);
@@ -82,7 +82,7 @@ interface IPrePOMarket {
    * @notice Redeem `longAmount` Long and `shortAmount` Short tokens for
    * Collateral.
    * @dev Before the market ends, redemptions can only be done with equal
-   * parts N Long/Short tokens for N Collateral.
+   * parts N Long/Short tokens for N Collateral. 
    *
    * After the market has ended, users can redeem any amount of
    * Long/Short tokens for Collateral.
@@ -91,7 +91,7 @@ interface IPrePOMarket {
    * @param longAmount Amount of Long tokens to redeem
    * @param shortAmount Amount of Short tokens to redeem
    */
-  function redeem(uint256 longAmount, uint256 shortAmount) external;
+  function redeem(uint256 longAmount, uint256 shortAmount) external; //@audit-info how do you enforce after the market and before?
 
   /**
    * @notice Sets hook to be called within `mint()`
@@ -116,7 +116,7 @@ interface IPrePOMarket {
    * Only callable by `owner()`.
    * @param finalLongPayout Payout to set Long token redemptions
    */
-  function setFinalLongPayout(uint256 finalLongPayout) external;
+  function setFinalLongPayout(uint256 finalLongPayout) external; //@audit-info so with this function you know when the market is over?
 
   /**
    * @notice Sets the fee for redeeming Long/Short tokens, must be a 4
@@ -124,7 +124,7 @@ interface IPrePOMarket {
    * @dev Only callable by `owner()`.
    * @param redemptionFee New redemption fee
    */
-  function setRedemptionFee(uint256 redemptionFee) external;
+  function setRedemptionFee(uint256 redemptionFee) external;//@audit-info so there are fees for redeeming and depositing collaterall 
 
   /// @return The hook that is called in `mint()`
   function getMintHook() external view returns (IMarketHook);
@@ -136,7 +136,7 @@ interface IPrePOMarket {
   function getCollateral() external view returns (IERC20);
 
   /**
-   * @dev The PrePOMarket is the owner of this token contract.
+   * @dev The PrePOMarket is the owner of this token contract. //@audit-info are you sure about that?
    * @return Long token for this market
    */
   function getLongToken() external view returns (ILongShortToken);
@@ -153,7 +153,7 @@ interface IPrePOMarket {
    * @dev Must be less than ceilingLongPayout and MAX_PAYOUT.
    * @return Minimum Long token payout
    */
-  function getFloorLongPayout() external view returns (uint256);
+  function getFloorLongPayout() external view returns (uint256);//@audit-info in wei units of collateral? how do you take into account the decimals
 
   /**
    * @notice Returns the upper bound of what a Long token can be paid out at
@@ -170,7 +170,7 @@ interface IPrePOMarket {
    * has ended when it is set to <= MAX_PAYOUT.
    * @return Final Long token payout
    */
-  function getFinalLongPayout() external view returns (uint256);
+  function getFinalLongPayout() external view returns (uint256);//@audit-info this of the market has endedlooks like trouble
 
   /**
    * @notice Returns valuation of a market when the payout of a Long
@@ -197,7 +197,7 @@ interface IPrePOMarket {
    * @notice Returns the timestamp of when the market will expire.
    * @dev This is not an enforced timestamp, market expiry only occurs once
    * the `finalLongPayout` is set.
-   * @return Market expiry timestamp
+   * @return Market expiry timestamp //@audit-info the timestamp is not enforced... kinda weird
    */
   function getExpiryTime() external view returns (uint256);
 
